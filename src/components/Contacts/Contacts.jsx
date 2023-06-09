@@ -1,25 +1,37 @@
 // import { Item, List } from './Contacts.styled';
-import PropTypes from 'prop-types';
-import { Item, List } from './Contacts.styled';
 
-export function Contacts({ contacts, deleteContact }) {
+import { Item, List } from './Contacts.styled';
+import { useDispatch, useSelector } from 'react-redux';
+import { useMemo } from 'react';
+import { actions } from 'store/contacts/ContactsSlice';
+
+export function Contacts() {
+  const contacts = useSelector(state => state.contacts.items);
+  const filter = useSelector(state => state.contacts.filter);
+  const dispatch = useDispatch();
+
+  const filteredContacts = useMemo(() => {
+    if (!filter) return contacts;
+    const normalizedFilter = filter.toLowerCase();
+    return contacts.filter(contact =>
+      contact.name.toLowerCase().includes(normalizedFilter)
+    );
+  }, [filter, contacts]);
+
   return (
     <>
       <List>
-        {contacts.map(contact => (
+        {filteredContacts.map(contact => (
           <Item key={contact.id}>
             <p>
               {contact.name}: {contact.number}
             </p>
-            <button onClick={() => deleteContact(contact.id)}>Удалить</button>
+            <button onClick={() => dispatch(actions.remove(contact.id))}>
+              Удалить
+            </button>
           </Item>
         ))}
       </List>
     </>
   );
 }
-
-Contacts.propTypes = {
-  deleteContact: PropTypes.func.isRequired,
-  contacts: PropTypes.array.isRequired,
-};
